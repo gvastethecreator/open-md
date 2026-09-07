@@ -11,7 +11,7 @@ Resolved versions live in those lockfiles, not in this page.
 3. Run `pnpm run verify`.
 4. Record user-visible or security-relevant changes in `CHANGELOG.md` under `Unreleased`.
 
-Keep `package.json` `overrides` until `pnpm audit --json` stays clean without them.
+Keep `pnpm-workspace.yaml` `overrides` until `pnpm audit --json` stays clean without them.
 
 ## Update Rust
 

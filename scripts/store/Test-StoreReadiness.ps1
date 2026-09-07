@@ -173,10 +173,10 @@ Add-Check -Name 'Builder uses no-bundle then bundle' -Passed ($builderText.Index
 
 $frontendUpdater = $false
 if ($null -ne $package.dependencies) {
-    $frontendUpdater = $null -ne $package.dependencies.'@tauri-apps/plugin-updater'
+    $frontendUpdater = $package.dependencies.PSObject.Properties.Name -contains '@tauri-apps/plugin-updater'
 }
 if (-not $frontendUpdater -and $null -ne $package.devDependencies) {
-    $frontendUpdater = $null -ne $package.devDependencies.'@tauri-apps/plugin-updater'
+    $frontendUpdater = $package.devDependencies.PSObject.Properties.Name -contains '@tauri-apps/plugin-updater'
 }
 $rustUpdater = $cargoText.IndexOf('tauri-plugin-updater', [StringComparison]::OrdinalIgnoreCase) -ge 0
 $registeredUpdater = $appLibText.IndexOf('tauri_plugin_updater', [StringComparison]::OrdinalIgnoreCase) -ge 0
