@@ -313,8 +313,9 @@ function decorateDiagram(diagram, kind, index) {
 
 export async function prepareMermaidDiagrams(
   container,
-  { reset = false, theme = 'default', tokens = null } = {}
+  { reset = false, theme = 'default', tokens = null, isCurrent = () => true } = {}
 ) {
+  if (!isCurrent()) return null;
   const diagrams = [...(container?.querySelectorAll?.('.mermaid') || [])];
   if (diagrams.length === 0) return null;
 
@@ -323,10 +324,10 @@ export async function prepareMermaidDiagrams(
   const sources = diagrams.map(captureDiagramSource);
 
   return enqueueMermaidRender(async () => {
-    if (requestRevision !== mermaidRequestRevision) return null;
+    if (!isCurrent() || requestRevision !== mermaidRequestRevision) return null;
 
     const mermaid = await configureMermaid(resolvedTheme, reset, tokens);
-    if (requestRevision !== mermaidRequestRevision) return null;
+    if (!isCurrent() || requestRevision !== mermaidRequestRevision) return null;
 
     const renderResults = [];
     for (let index = 0; index < diagrams.length; index += 1) {
@@ -338,7 +339,7 @@ export async function prepareMermaidDiagrams(
         `openmd-mermaid-${requestRevision}-${index}`,
         sources[index]
       );
-      if (requestRevision !== mermaidRequestRevision) return null;
+      if (!isCurrent() || requestRevision !== mermaidRequestRevision) return null;
       renderResults.push(result);
     }
 
@@ -347,7 +348,7 @@ export async function prepareMermaidDiagrams(
       theme: resolvedTheme,
       count: diagrams.length,
       commit() {
-        if (committed || requestRevision !== mermaidRequestRevision) return false;
+        if (committed || !isCurrent() || requestRevision !== mermaidRequestRevision) return false;
         if (!diagrams.every((diagram) => isCurrentTarget(container, diagram))) return false;
 
         diagrams.forEach((diagram, index) => {

@@ -265,6 +265,18 @@ describe('mermaid renderer boundary', () => {
     expect(diagram.innerHTML).toBe('graph TD; A-->B');
   });
 
+  it('refuses to prepare or commit after document disposal even when nodes remain connected', async () => {
+    const diagram = createDiagram();
+    const container = createContainer([diagram]);
+    let current = true;
+    const prepared = await prepareMermaidDiagrams(container, { isCurrent: () => current });
+    current = false;
+    expect(prepared.commit()).toBe(false);
+    expect(diagram.innerHTML).toBe('graph TD; A-->B');
+    await expect(prepareMermaidDiagrams(container, { isCurrent: () => current })).resolves.toBeNull();
+    expect(testState.mermaid.render).toHaveBeenCalledOnce();
+  });
+
   it('clears a failed import so the next render retries successfully', async () => {
     testState.rejectNextImport = true;
 

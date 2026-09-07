@@ -134,6 +134,7 @@ describe('reader shell', () => {
       reset: true,
       theme: 'dark',
       tokens: diagramTokens,
+      isCurrent: expect.any(Function),
     });
     expect(prepared.commit).not.toHaveBeenCalled();
 

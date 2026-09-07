@@ -3,6 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDocumentSession } from './document-session.js';
+import { createApplicationRuntimeAdapters } from './application-runtime-adapters.js';
+import { highlightCodeBlocks, highlightDocument } from './syntax-highlighter.js';
 
 const indexHtml = readFileSync('index.html', 'utf8');
 
@@ -34,7 +36,7 @@ function sessionElements() {
   };
 }
 
-function createSession({ open, readImage, readImageFile, prepare, render, highlight, resources, hooks } = {}) {
+function createSession({ open, readImage, readImageFile, prepare, render, highlight, resources, hooks, syntax, clipboard } = {}) {
   return createDocumentSession({
     window,
     elements: sessionElements(),
@@ -50,7 +52,9 @@ function createSession({ open, readImage, readImageFile, prepare, render, highli
       },
       syntax: {
         highlight: highlight || vi.fn(async () => false),
+        ...syntax,
       },
+      clipboard,
       resources: resources || createResources(),
     },
     hooks,
@@ -64,6 +68,84 @@ beforeEach(() => {
 });
 
 describe('document session', () => {
+  it.each(['replace', 'dispose'])('does not apply delayed syntax after document %s', async (ending) => {
+    let release;
+    let started;
+    const loading = new Promise((resolve) => { started = resolve; });
+    const highlight = vi.fn(highlightCodeBlocks);
+    const fullHighlight = vi.fn(highlightDocument);
+    const runtime = createApplicationRuntimeAdapters({
+      window,
+      syntaxLoader: () => {
+        started();
+        return new Promise((resolve) => { release = () => resolve({ highlightCodeBlocks: highlight, highlightDocument: fullHighlight }); });
+      },
+    });
+    const session = createSession({
+      syntax: runtime.syntax,
+      open: async (path) => payload({
+        html: path === 'new.md' ? '<h1>New</h1>' : '<pre><code class="language-json">{"old":true}</code></pre>',
+        source: '{invalid',
+      }),
+    });
+    const opening = session.open({ path: ending === 'replace' ? 'old.md' : 'old.json' });
+    await loading;
+    if (ending === 'replace') await session.open({ path: 'new.md' });
+    else session.dispose();
+    const before = document.querySelector('#content').innerHTML;
+    release();
+    await expect(opening).resolves.toMatchObject({ status: 'superseded' });
+    expect(document.querySelector('#content').innerHTML).toBe(before);
+    expect(highlight).not.toHaveBeenCalled();
+    expect(fullHighlight).not.toHaveBeenCalled();
+    session.dispose();
+  });
+
+  it('highlights companion content once and still colors a subsequent edited document', async () => {
+    let source = '{"before":';
+    const highlight = vi.fn(highlightCodeBlocks);
+    const fullHighlight = vi.fn(highlightDocument);
+    const session = createSession({
+      open: async () => payload({ source }),
+      syntax: { highlight, highlightDocument: fullHighlight },
+    });
+    await session.open({ path: 'broken.json' });
+    expect(highlight).not.toHaveBeenCalled();
+    expect(fullHighlight).toHaveBeenCalledOnce();
+    const code = document.querySelector('#content code');
+    expect(code.textContent).toBe(source);
+    expect(code.querySelector('.hljs-attr')).not.toBeNull();
+    source = '{"after":';
+    await session.open({ path: 'broken.json', quiet: true });
+    expect(fullHighlight).toHaveBeenCalledTimes(2);
+    expect(document.querySelector('#content code').textContent).toBe(source);
+    expect(document.querySelector('#content .hljs-attr').textContent).toContain('after');
+    session.dispose();
+  });
+
+  it.each(['clear', 'dispose'])('ignores pending clipboard completion after %s', async (ending) => {
+    let complete;
+    const onToast = vi.fn();
+    const onDiagnostic = vi.fn();
+    const writeText = vi.fn(() => new Promise((resolve, reject) => {
+      complete = () => ending === 'clear' ? resolve() : reject(new Error('Clipboard unavailable'));
+    }));
+    const session = createSession({
+      open: async () => payload({ html: '<pre><code>copy me</code></pre>' }),
+      clipboard: { writeText }, hooks: { onToast, onDiagnostic },
+    });
+    await session.open({ path: 'code.md' });
+    const button = document.querySelector('#content .copy-code-btn');
+    button.click();
+    session[ending]();
+    complete();
+    await Promise.resolve();
+    expect(onToast).not.toHaveBeenCalled();
+    expect(onDiagnostic).not.toHaveBeenCalled();
+    expect(button.getAttribute('aria-label')).toBe('Copy code block');
+    button.click();
+    expect(writeText).toHaveBeenCalledOnce();
+  });
   it('requires an injected content element instead of looking up #content', () => {
     expect(() => createDocumentSession({
       window,
@@ -247,6 +329,7 @@ describe('document session', () => {
     expect(prepare).toHaveBeenCalledWith(document.querySelector('#content'), {
       reset: true,
       theme: 'dark',
+      isCurrent: expect.any(Function),
     });
     expect(document.querySelector('#content .mermaid')?.innerHTML).toBe(visibleBefore);
     expect(prepared.commit).not.toHaveBeenCalled();
@@ -311,6 +394,17 @@ describe('document session', () => {
 
     // No double inject on re-open enrichment path: still one button.
     expect(document.querySelectorAll('#content .copy-code-btn')).toHaveLength(1);
+    const schedule = vi.spyOn(window, 'setTimeout');
+    const cancel = vi.spyOn(window, 'clearTimeout');
+    button.click();
+    await writeText.mock.results[2].value;
+    const resetIndex = schedule.mock.calls.findIndex(([, delay]) => delay === 2000);
+    expect(resetIndex).toBeGreaterThanOrEqual(0);
+    const resetTimer = schedule.mock.results[resetIndex].value;
+    session.clear();
+    expect(cancel).toHaveBeenCalledWith(resetTimer);
+    schedule.mockRestore();
+    cancel.mockRestore();
     vi.useRealTimers();
   });
 

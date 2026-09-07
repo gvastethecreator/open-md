@@ -110,7 +110,9 @@ function renderSource(document, sourceContent, source, isMarkdown) {
   sourceContent.replaceChildren(fragment);
 }
 
-function enhanceCodeBlocks({ window, document, content, clipboard, onToast, onDiagnostic }) {
+function enhanceCodeBlocks({ window, document, content, clipboard, onToast, onDiagnostic, isCurrent }) {
+  let disposed = false;
+  const cleanups = [];
   content.querySelectorAll('pre').forEach((pre) => {
     const code = pre.querySelector('code');
     if (!code || pre.querySelector('.copy-code-btn')) return;
@@ -127,6 +129,7 @@ function enhanceCodeBlocks({ window, document, content, clipboard, onToast, onDi
     button.appendChild(icon);
 
     let resetTimer = null;
+    let copyRevision = 0;
     const restoreIdle = () => {
       resetTimer = null;
       icon.className = 'iconoir-copy';
@@ -135,7 +138,10 @@ function enhanceCodeBlocks({ window, document, content, clipboard, onToast, onDi
       button.dataset.tooltip = 'Copy code';
     };
 
-    button.addEventListener('click', async () => {
+    const copy = async () => {
+      if (disposed || !isCurrent()) return;
+      const revision = ++copyRevision;
+      const active = () => !disposed && isCurrent() && revision === copyRevision;
       if (resetTimer != null) {
         window.clearTimeout?.(resetTimer);
         resetTimer = null;
@@ -147,6 +153,7 @@ function enhanceCodeBlocks({ window, document, content, clipboard, onToast, onDi
         // Prefer textContent when innerText is empty (common in jsdom / some WebViews).
         const text = String(code.innerText || code.textContent || '');
         await clipboard.writeText(text);
+        if (!active()) return;
         icon.className = 'iconoir-check';
         button.classList.add('is-copied');
         button.classList.remove('is-copy-error');
@@ -154,6 +161,7 @@ function enhanceCodeBlocks({ window, document, content, clipboard, onToast, onDi
         button.dataset.tooltip = 'Copied';
         onToast?.('Code copied');
       } catch (error) {
+        if (!active()) return;
         onDiagnostic?.('Could not copy code', error);
         icon.className = 'iconoir-refresh';
         button.classList.add('is-copy-error');
@@ -163,11 +171,22 @@ function enhanceCodeBlocks({ window, document, content, clipboard, onToast, onDi
         onToast?.('Could not copy the code');
       }
 
-      resetTimer = window.setTimeout(restoreIdle, 2000);
+      if (active()) resetTimer = window.setTimeout(restoreIdle, 2000);
+    };
+    button.addEventListener('click', copy);
+    cleanups.push(() => {
+      if (resetTimer != null) window.clearTimeout(resetTimer);
+      button.removeEventListener('click', copy);
+      button.remove();
     });
 
     pre.appendChild(button);
   });
+  return () => {
+    disposed = true;
+    cleanups.forEach((cleanup) => cleanup());
+    cleanups.length = 0;
+  };
 }
 
 function focusContent({ content, readerPage, sourceView, fragment, sourceActive }) {
@@ -210,17 +229,19 @@ export function enhanceReadSurface({
   clipboard,
   onToast,
   onDiagnostic,
+  isCurrent = () => true,
 }) {
   if (!content) return;
   renderSource(document, sourceContent, source, isMarkdown);
   enhanceTables(document, content);
-  enhanceCodeBlocks({
+  return enhanceCodeBlocks({
     window,
     document,
     content,
     clipboard,
     onToast,
     onDiagnostic,
+    isCurrent,
   });
 }
 
@@ -245,6 +266,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
   let imageViewerBytes = null;
   let imageViewerMime = null;
   let imageViewerPath = null;
+  let disposeReadSurface = null;
   let state = Object.freeze({ state: 'idle', path: null, document: null });
 
   const disposeImageViewer = () => {
@@ -261,6 +283,10 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
     hooks.onStateChange?.(state);
   };
   const isCurrent = (candidate) => !disposed && candidate === generation;
+  const clearReadSurface = () => {
+    disposeReadSurface?.();
+    disposeReadSurface = null;
+  };
 
   const hydrateImages = async (path, candidate) => {
     const images = [...content.querySelectorAll('img')];
@@ -329,6 +355,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
   const clear = () => {
     if (disposed) return;
     generation += 1;
+    clearReadSurface();
     disposeImageViewer();
     resources.clear();
     content.removeAttribute('aria-busy');
@@ -417,6 +444,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
     }
 
     const candidate = ++generation;
+    clearReadSurface();
     disposeImageViewer();
     resources.clear();
     content.setAttribute('aria-busy', 'true');
@@ -482,7 +510,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
         hooks.onSettled?.(state);
       }
 
-      enhanceReadSurface({
+      disposeReadSurface = enhanceReadSurface({
         window,
         document,
         content,
@@ -492,15 +520,19 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
         clipboard: adapters.clipboard || window.navigator?.clipboard,
         onToast: hooks.onToast,
         onDiagnostic: hooks.onDiagnostic,
+        isCurrent: () => isCurrent(candidate),
       });
 
       await hydrateImages(path, candidate);
       if (!isCurrent(candidate)) return { status: 'superseded', path };
 
       try {
-        await adapters.syntax?.highlight?.(content);
-        if (!isMarkdown && adapters.syntax?.highlightDocument) {
-          await adapters.syntax.highlightDocument(content, getHighlightLanguage(format));
+        const scope = { isCurrent: () => isCurrent(candidate) };
+        const language = getHighlightLanguage(format);
+        if (!isMarkdown && language && adapters.syntax?.highlightDocument) {
+          await adapters.syntax.highlightDocument(content, language, scope);
+        } else {
+          await adapters.syntax?.highlight?.(content, scope);
         }
       } catch (error) {
         if (!isCurrent(candidate)) return { status: 'superseded', path };
@@ -512,6 +544,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
       try {
         const diagramTokens = hooks.getDiagramTokens?.();
         await adapters.diagrams?.render?.(content, {
+          isCurrent: () => isCurrent(candidate),
           theme: hooks.getDiagramTheme?.() || 'default',
           ...(diagramTokens ? { tokens: diagramTokens } : {}),
         });
@@ -525,6 +558,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
       return { status: 'ready', path, document: openedDocument };
     } catch (error) {
       if (!isCurrent(candidate)) return { status: 'superseded', path };
+      clearReadSurface();
       disposeImageViewer();
       resources.clear();
       content.removeAttribute('aria-busy');
@@ -546,6 +580,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
     const candidate = generation;
     try {
       const rendered = await adapters.diagrams?.render?.(content, {
+        isCurrent: () => isCurrent(candidate),
         reset: true,
         theme,
         ...(tokens ? { tokens } : {}),
@@ -565,6 +600,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
     const candidate = generation;
     try {
       const prepared = await adapters.diagrams?.prepare?.(content, {
+        isCurrent: () => isCurrent(candidate),
         reset: true,
         theme,
         ...(tokens ? { tokens } : {}),
@@ -599,6 +635,7 @@ export function createDocumentSession({ window, adapters, hooks = {}, elements =
       if (disposed) return;
       disposed = true;
       generation += 1;
+      clearReadSurface();
       disposeImageViewer();
       resources.clear();
     },

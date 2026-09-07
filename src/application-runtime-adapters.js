@@ -198,15 +198,17 @@ export function createApplicationRuntimeAdapters({
     return syntaxPromise;
   };
 
-  const highlight = async (container) => {
-    if (!container?.querySelector?.('pre code')) return false;
+  const highlight = async (container, { isCurrent = () => true } = {}) => {
+    if (!isCurrent() || !container?.querySelector?.('pre code')) return false;
     const { highlightCodeBlocks } = await loadSyntax();
+    if (!isCurrent()) return false;
     return highlightCodeBlocks(container);
   };
 
-  const highlightDocument = async (container, language) => {
-    if (!container || !language) return false;
+  const highlightDocument = async (container, language, { isCurrent = () => true } = {}) => {
+    if (!isCurrent() || !container || !language) return false;
     const module = await loadSyntax();
+    if (!isCurrent()) return false;
     if (typeof module.highlightDocument !== 'function') return false;
     return module.highlightDocument(container, language);
   };
