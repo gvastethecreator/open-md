@@ -9,6 +9,9 @@ stable release is cut.
 
 ### Added
 
+- Editor cursor motion slides between lines with a gradient trail. Disable it
+  in Advanced options → Motion → **Editor cursor motion**. The setting is
+  saved and respects **Reduce motion**.
 - Classic scene `.nfo` companions open when the file is IBM Code Page 437.
   Read and Source use a VGA cell grid (PxPlus IBM VGA8). There is no editor.
   UTF-8 Kodi/Windows XML `.nfo` files stay ordinary text.
@@ -16,6 +19,11 @@ stable release is cut.
 
 ### Fixed
 
+- The first document is editable when it opens before the editor finishes loading.
+- Work from a closed or replaced document no longer applies late syntax, diagram,
+  or clipboard feedback.
+- Store validation reports a missing updater as a submission blocker instead
+  of failing with a PowerShell property error.
 - Full-document NFO and log Read no longer grow a Copy code overlay.
 - Native save rejects scene `.nfo` and `.log` files so UTF-8 cannot overwrite them.
 - Advanced **Reduce motion** now also stops JS/WAAPI chrome motion (toasts,
@@ -24,6 +32,8 @@ stable release is cut.
 
 ### Changed
 
+- JSON previews stop generating rows at the existing value limit. Source stays complete.
+- Editing reuses the serialized document, and companion documents use one syntax pass.
 - Frontend packages: `vite` 8.2.2, `vitest` 4.1.11, and `mermaid` 11.17.2.
   CI and docs now match `pnpm@12.0.0`.
 - Markdown fences are language-tagged escaped HTML. JS highlight.js is the
