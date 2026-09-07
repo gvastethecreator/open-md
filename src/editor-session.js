@@ -284,6 +284,7 @@ export function createEditorSession({ window, elements, adapters, hooks = {} }) 
 
   const refreshPresentation = () => {
     if (disposed || mode !== 'edit') return;
+    classicSurface?.refreshCaretMotion();
     const nextEditPresentation = adapters.isSourceMode?.() ? 'source' : 'rendered';
     const presentationChanged = nextEditPresentation !== editPresentation;
     if (isJsonProps() && !presentationChanged) {
@@ -448,6 +449,7 @@ export function createEditorSession({ window, elements, adapters, hooks = {} }) 
       restoreHistory,
       setCursor,
       shouldReduceMotion: resolveReduceMotion,
+      isCaretMotionEnabled: () => adapters.getAdvancedPreferences?.()?.editorCaretMotion !== false,
       getAriaLabel: () => isSourcePresentation() ? 'Source editor' : 'Document editor',
       getActiveLineBand: () => activeLineBand,
       getBandHost: () => root,

@@ -5,13 +5,6 @@ import {
 } from './theme-tokens.js';
 import { shouldReduceMotion } from './reader-motion.js';
 
-export {
-  getContrastRatio,
-  getPreferredThemeIndex,
-  getThemeTokens,
-  isColorDark,
-} from './theme-tokens.js';
-
 const DEFAULT_CURATED_NAMES = ['Paper', 'Github Light', 'Github Dark', 'Ayu Light', 'Ayu Dark'];
 
 /** Three signature colors for a theme preview pill: background, text, accent. */

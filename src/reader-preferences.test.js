@@ -46,6 +46,7 @@ describe('reader preferences', () => {
         edgeFade: true,
         imageDefaultZoom: 'fit',
         imageZoomAnimation: true,
+        editorCaretMotion: true,
         csvRowCap: 500,
         randomThemeAtStart: false,
         pathRemembersTheme: false,
@@ -68,6 +69,7 @@ describe('reader preferences', () => {
         randomThemeAtStart: true,
         pathRemembersTheme: true,
         reduceMotion: true,
+        editorCaretMotion: false,
       },
     });
     const snapshot = preferences.current().advanced;
@@ -77,8 +79,12 @@ describe('reader preferences', () => {
     expect(snapshot.randomThemeAtStart).toBe(true);
     expect(snapshot.pathRemembersTheme).toBe(true);
     expect(snapshot.reduceMotion).toBe(true);
+    expect(snapshot.editorCaretMotion).toBe(false);
     expect(snapshot.magicSniff).toBeUndefined();
     expect(store.dump()['openmd-advanced-preferences-v1']).toContain('100%');
+    const reloaded = createReaderPreferences({ store });
+    await reloaded.load();
+    expect(reloaded.current().advanced.editorCaretMotion).toBe(false);
   });
 
   it('shouldReduceMotion is true for OS preference or app toggle', async () => {

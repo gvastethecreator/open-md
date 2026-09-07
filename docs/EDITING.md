@@ -30,6 +30,8 @@ While the caret is in the editor, the status bar shows its source line and visib
 
 Advanced options → **Reduce motion** disables non-essential editor and chrome animation. The operating system's `prefers-reduced-motion` setting is always honored.
 
+Advanced options → Motion → **Editor cursor motion** controls the caret slide and gradient trail. Moving down exits at the right edge and enters the next line from the left; moving up reverses that path. Moves on the same visual line slide directly to the new position. The setting is saved and applies to Rendered Edit and Source Edit. Selection and typing take effect immediately; selecting text or composing with an IME uses the native caret.
+
 ## Source Edit
 
 Source Edit is the same line-based host with raw syntax on every line. It supports selection and replacement across lines.

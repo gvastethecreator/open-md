@@ -1,10 +1,10 @@
 # Code map · open.md
 
-generated: 2026-08-28T18:47:39Z
-commit: 26163df1062b
+generated: 2026-09-07T00:58:38Z
+commit: 253311e2cd4d
 scope: .
 
-counts: 9 nodes · 10 edges · 0 flows · 0 unknown
+counts: 8 nodes · 8 edges · 0 flows · 0 unknown
 
 ## Modules
 
@@ -33,16 +33,10 @@ counts: 9 nodes · 10 edges · 0 flows · 0 unknown
   entry: scripts/store/Build-StoreInstaller.ps1:Invoke
 
 - `src` · `src` · module · Src
-  callers: repository (calls), src-core (imports)
-  callees: external-dependencies (imports), scripts (imports), src-core (imports)
+  callers: repository (calls)
+  callees: external-dependencies (imports), scripts (imports)
   tests: src/app-loading-screen.test.js, src/application-composition.test.js, src/application-lifecycle.test.js, src/application-runtime-adapters.test.js, src/context-menu-controller.test.js
   entry: src/main.js:cacheElements
-
-- `src-core` · `src/core` · service · Src
-  callers: src (imports)
-  callees: src (imports)
-  tests: src/main.test.js
-  entry: src/core/reader.js:isSupportedFilePath
 
 - `src-tauri` · `src-tauri` · module · Src Tauri
   callers: (none)
@@ -69,8 +63,6 @@ counts: 9 nodes · 10 edges · 0 flows · 0 unknown
 - repository -> src · calls
 - src -> external-dependencies · imports
 - src -> scripts · imports
-- src -> src-core · imports
-- src-core -> src · imports
 - src-tauri-src -> external-dependencies · imports
 - vite-config -> external-dependencies · imports
 - vite-config -> scripts · imports

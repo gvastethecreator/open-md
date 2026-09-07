@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-28T18:47:39Z",
-  "generated_from_commit": "26163df1062b4702e18c8dd374a90ed8916818c1",
+  "generated_at": "2026-09-07T00:58:38Z",
+  "generated_from_commit": "253311e2cd4dc2a612e5ebac8c35358f877214dc",
   "scope": [
     "."
   ],
@@ -154,10 +154,6 @@
         {
           "id": "repository",
           "type": "calls"
-        },
-        {
-          "id": "src-core",
-          "type": "imports"
         }
       ],
       "callees": [
@@ -168,10 +164,6 @@
         {
           "id": "scripts",
           "type": "imports"
-        },
-        {
-          "id": "src-core",
-          "type": "imports"
         }
       ],
       "evidence": {
@@ -180,39 +172,6 @@
           {
             "path": "src/main.js",
             "symbol": "cacheElements"
-          }
-        ]
-      }
-    },
-    {
-      "id": "src-core",
-      "path": "src/core",
-      "type": "service",
-      "boundary": "Src",
-      "entrypoints": [
-        "src/core/reader.js:isSupportedFilePath"
-      ],
-      "tests": [
-        "src/main.test.js"
-      ],
-      "callers": [
-        {
-          "id": "src",
-          "type": "imports"
-        }
-      ],
-      "callees": [
-        {
-          "id": "src",
-          "type": "imports"
-        }
-      ],
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "src/core/reader.js",
-            "symbol": "isSupportedFilePath"
           }
         ]
       }
@@ -382,42 +341,6 @@
           {
             "path": "src/free-port.test.js",
             "symbol": "../scripts/free-port.mjs"
-          }
-        ]
-      }
-    },
-    {
-      "from": "src",
-      "to": "src-core",
-      "type": "imports",
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "src/main.test.js",
-            "symbol": "./core/reader.js"
-          }
-        ]
-      }
-    },
-    {
-      "from": "src-core",
-      "to": "src",
-      "type": "imports",
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "src/core/reader.js",
-            "symbol": "../format-detect.js"
-          },
-          {
-            "path": "src/core/reader.js",
-            "symbol": "../status-metrics.js"
-          },
-          {
-            "path": "src/core/reader.js",
-            "symbol": "../document-path.js"
           }
         ]
       }

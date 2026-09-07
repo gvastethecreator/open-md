@@ -41,7 +41,7 @@ pnpm run check:rust
 pnpm run test:rust
 ```
 
-`check:frontend` keeps static asset, config, and theme invariants separate from reader-shell scenarios over real `index.html` with fake adapters. `pnpm run verify` runs those checks, all frontend tests, the production build and bundle budget, plus Rust format, type-check, and unit tests. CI runs the same gates on Linux, Windows, and macOS, then runs pnpm and Cargo dependency audits.
+`check:frontend` validates static assets, config, themes, and Pages. `test:frontend` runs all frontend tests, including reader-shell scenarios over real `index.html` with fake adapters. Use `check:shell` to run only those scenarios. `pnpm run verify` runs each check once, builds the frontend and checks its bundle budget, then checks Rust formatting, types, and unit tests. CI runs the same gates on Linux, Windows, and macOS, then runs pnpm and Cargo dependency audits.
 
 Reproduce the Rust audit locally with the pinned tool version used in CI:
 

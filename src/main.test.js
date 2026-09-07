@@ -5,31 +5,33 @@ import {
   getPreferredThemeIndex,
   getThemeTokens,
   isColorDark,
-} from './theme-coordinator.js';
+} from './theme-tokens.js';
 import {
-  calculateNewZoom,
   getDisplayName,
-  getFileKind,
-  getCurrentLineFromAnchors,
-  getDocumentModePresentation,
-  getEstimatedMinutesRemaining,
-  getLineGutterLeft,
-  getMarkdownSourceTokenRanges,
   getImageSourcePolicy,
   getLinkAction,
+  resolveRelativeFilePath,
+} from './document-path.js';
+import { normalizeDocumentPayload } from './document-payload.js';
+import { isSupportedFilePath } from './format-detect.js';
+import {
+  getMarkdownSourceTokenRanges,
+  setMarkdownTaskChecked,
+} from './markdown-source.js';
+import {
+  getCurrentLineFromAnchors,
+  getLineGutterLeft,
   getMinimapScrollTopFromPointer,
   getMinimapViewportGeometry,
   getReadingProgress,
   getScrollEdgeState,
-  setMarkdownTaskChecked,
-  getStatusMetricParts,
-  getViewportMode,
   getVisibleSourceLineRange,
-  getWindowControlPresentation,
-  isSupportedFilePath,
-  normalizeDocumentPayload,
-  resolveRelativeFilePath,
-} from './core/reader.js';
+} from './reading-geometry.js';
+import { getDocumentStatusMetrics, getEstimatedMinutesRemaining } from './status-metrics.js';
+import { getDocumentModePresentation } from './document-mode-coordinator.js';
+import { getViewportMode } from './reader-viewport-controller.js';
+import { calculateNewZoom } from './reader-zoom-controller.js';
+import { getWindowControlPresentation } from './window-chrome.js';
 import { normalizeFontIndex, normalizeReadingTools } from './reader-preferences.js';
 
 describe('Frontend Logic Tests', () => {
@@ -171,16 +173,6 @@ describe('Frontend Logic Tests', () => {
       expect(getDisplayName('')).toBe('No file');
     });
 
-    it('labels the file kind for the minimal status bar', () => {
-      expect(getFileKind('C:\\docs\\guide.md')).toBe('Markdown');
-      expect(getFileKind('notes.markdown')).toBe('Markdown');
-      expect(getFileKind('notes.TXT')).toBe('Text');
-      expect(getFileKind('config.json')).toBe('Text');
-      expect(getFileKind('setup.INI')).toBe('Text');
-      expect(getFileKind('photo.png')).toBe('Image');
-      expect(getFileKind('cover.JPEG')).toBe('Image');
-    });
-
     it('resolves relative markdown links from the current document', () => {
       expect(resolveRelativeFilePath('C:\\docs\\guide\\intro.md', '../api/reference.md')).toBe(
         'C:/docs/api/reference.md'
@@ -312,7 +304,7 @@ describe('Frontend Logic Tests', () => {
     });
 
     it('keeps essential document counts and only exposes a custom zoom', () => {
-      const defaultZoom = getStatusMetricParts({
+      const defaultZoom = getDocumentStatusMetrics({
         lineCount: 42,
         characterCount: 1280,
         zoomPercent: 100,
@@ -333,7 +325,7 @@ describe('Frontend Logic Tests', () => {
       ]);
       expect(defaultZoom.items.some(({ kind }) => kind === 'zoom')).toBe(false);
 
-      const customZoom = getStatusMetricParts({
+      const customZoom = getDocumentStatusMetrics({
         lineCount: 1,
         characterCount: 8,
         zoomPercent: 125,

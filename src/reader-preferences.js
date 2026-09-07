@@ -36,6 +36,7 @@ export const DEFAULT_ADVANCED_PREFERENCES = Object.freeze({
   edgeFade: true,
   imageDefaultZoom: 'fit', // 'fit' | '100%'
   imageZoomAnimation: true,
+  editorCaretMotion: true,
   csvRowCap: 500,
   randomThemeAtStart: false,
   pathRemembersTheme: false,
@@ -57,6 +58,7 @@ export function normalizeAdvancedPreferences(value) {
     edgeFade: value?.edgeFade !== false,
     imageDefaultZoom,
     imageZoomAnimation: value?.imageZoomAnimation !== false,
+    editorCaretMotion: value?.editorCaretMotion !== false,
     csvRowCap,
     randomThemeAtStart: Boolean(value?.randomThemeAtStart),
     pathRemembersTheme: Boolean(value?.pathRemembersTheme),

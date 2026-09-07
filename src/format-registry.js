@@ -2,10 +2,8 @@
  * Format capabilities: modes, editor kind, read renderer, highlight language.
  */
 
-import {
-  getFormatFromPath,
-  imageMimeForFormat as mimeForFormat,
-} from './format-detect.js';
+import { getFormatFromPath } from './format-detect.js';
+export { imageMimeForFormat } from './format-detect.js';
 
 const DESCRIPTORS = Object.freeze({
   markdown: Object.freeze({
@@ -157,10 +155,6 @@ export function allowsDocumentMode(format, mode, hint = {}) {
   return descriptor.modes.includes(mode);
 }
 
-export function getAllowedModes(format, hint = {}) {
-  return getFormatDescriptor(format, hint).modes;
-}
-
 export function getEditorKind(format, hint = {}) {
   return getFormatDescriptor(format, hint).editorKind;
 }
@@ -211,14 +205,6 @@ export function getFormatLabel(format, hint = {}) {
   if (descriptor.id === 'nfo') return 'NFO';
   if (descriptor.id === 'log') return 'Log';
   return 'Text';
-}
-
-export function imageMimeForFormat(format) {
-  return mimeForFormat(format);
-}
-
-export function listFormatDescriptors() {
-  return DESCRIPTORS;
 }
 
 /**

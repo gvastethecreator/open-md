@@ -2160,6 +2160,41 @@ body.is-line-guide .editor-end-hint {
   z-index: 1;
 }
 
+.editor-caret-overlay {
+  position: fixed;
+  z-index: 67;
+  pointer-events: none;
+  overflow: hidden;
+  color: var(--ui-accent);
+}
+
+.editor-caret-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  will-change: transform;
+}
+
+.editor-caret-gradient {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  opacity: 0;
+  transform-origin: right;
+  background: linear-gradient(to right, transparent, currentColor);
+}
+
+.editor-caret-slide[data-direction="left"] .editor-caret-gradient {
+  right: auto;
+  left: 0;
+  transform-origin: left;
+  background: linear-gradient(to left, transparent, currentColor);
+}
+
 .editor-caret-echo {
   position: fixed;
   z-index: 68;
@@ -2172,16 +2207,6 @@ body.is-line-guide .editor-end-hint {
   transform: translateX(-1px) scaleY(1);
   transform-origin: center;
   animation: editor-caret-blink 1.05s step-end infinite;
-}
-
-.editor-caret-trail {
-  position: fixed;
-  z-index: 67;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
 }
 
 .editor-caret-echo.is-moving {
@@ -2416,6 +2441,11 @@ body.is-line-guide .editor-end-hint {
 .editor-canvas.is-classic-surface {
   outline: none;
   caret-color: var(--text-color);
+}
+
+.editor-view .editor-canvas.is-caret-sliding,
+.editor-view .editor-canvas.is-caret-sliding * {
+  caret-color: transparent;
 }
 
 .editor-view.is-source-presentation .classic-line {
@@ -5309,10 +5339,6 @@ label.appearance-theme-field.reading-tool-toggle .theme-select {
     transition: none !important;
   }
 
-  .editor-caret-trail {
-    display: none !important;
-  }
-
   ::view-transition-group(document-surface),
   ::view-transition-old(document-surface),
   ::view-transition-new(document-surface),
@@ -5416,8 +5442,4 @@ body.is-app-reduce-motion .editor-caret-echo {
 body.is-app-reduce-motion .editor-active-line-band,
 body.is-app-reduce-motion .editor-active-line-band * {
   transition: none !important;
-}
-
-body.is-app-reduce-motion .editor-caret-trail {
-  display: none !important;
 }

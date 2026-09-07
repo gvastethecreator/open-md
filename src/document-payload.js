@@ -25,17 +25,12 @@ export function normalizeDocumentPayload(payload) {
   const source = payload.source;
   const fallbackLineCount = source.split('\n').length;
   const kindRaw = typeof payload.kind === 'string' ? payload.kind : undefined;
-  const kind = kindRaw && KNOWN_KINDS.has(kindRaw)
-    ? kindRaw
-    : kindRaw === 'image'
-      ? 'image'
-      : undefined;
+  const kind = kindRaw && KNOWN_KINDS.has(kindRaw) ? kindRaw : undefined;
   const formatRaw = typeof payload.format === 'string' ? payload.format : undefined;
   let format = formatRaw && KNOWN_FORMATS.has(formatRaw) ? formatRaw : undefined;
   if (!format && kind === 'image') format = 'image';
   if (!format && kind === 'markdown') format = 'markdown';
   if (!format && kind === 'text') format = 'text';
-  // Legacy payloads: kind image only
   const resolvedKind = kind === 'image'
     ? 'image'
     : kind === 'markdown'
@@ -56,7 +51,7 @@ export function normalizeDocumentPayload(payload) {
     || (resolvedKind === 'text' ? 'text' : undefined);
 
   const normalized = {
-    html: typeof payload?.html === 'string' ? payload.html : '',
+    html: payload.html,
     source,
     lineCount: Math.max(1, Number.isFinite(payload?.lineCount) ? Math.floor(payload.lineCount) : fallbackLineCount),
     characterCount: Math.max(

@@ -116,7 +116,3 @@ export function highlightDocument(container, language) {
   }
   return highlighted > 0;
 }
-
-export function isHighlightLanguageSupported(language) {
-  return Boolean(resolveLanguage(language));
-}

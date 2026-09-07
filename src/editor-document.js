@@ -18,19 +18,6 @@ const BLOCK_TYPES = new Set([
 
 let nextBlockId = 1;
 
-export const EDITOR_COMMANDS = Object.freeze([
-  { id: 'paragraph', label: 'Text', hint: 'Plain text', icon: 'iconoir-text' },
-  { id: 'heading1', label: 'Heading 1', hint: 'Large section title', icon: 'iconoir-text-size' },
-  { id: 'heading2', label: 'Heading 2', hint: 'Medium section title', icon: 'iconoir-text-size' },
-  { id: 'heading3', label: 'Heading 3', hint: 'Small section title', icon: 'iconoir-text-size' },
-  { id: 'bullet', label: 'Bulleted list', hint: 'Simple unordered list', icon: 'iconoir-list' },
-  { id: 'numbered', label: 'Numbered list', hint: 'Ordered steps', icon: 'iconoir-numbered-list-left' },
-  { id: 'todo', label: 'To-do', hint: 'Task with a checkbox', icon: 'iconoir-check-square' },
-  { id: 'quote', label: 'Quote', hint: 'Highlight a quote', icon: 'iconoir-quote' },
-  { id: 'code', label: 'Code', hint: 'Fenced code block', icon: 'iconoir-code' },
-  { id: 'divider', label: 'Divider', hint: 'Separate sections', icon: 'iconoir-minus' },
-]);
-
 export function createEditorBlock(type = 'paragraph', text = '', options = {}) {
   const normalizedType = BLOCK_TYPES.has(type) ? type : 'paragraph';
   return {
@@ -449,159 +436,6 @@ export function createEditorDocumentModel({
     return result;
   };
   const findIndex = (id) => blocks.findIndex((block) => block.id === id);
-  const block = (id) => {
-    const found = blocks[findIndex(id)];
-    return found ? publicBlock(found) : null;
-  };
-  const normalizedBlock = (current, patch) => createEditorBlock(
-    patch.type ?? current.type,
-    patch.text ?? current.text,
-    {
-      id: current.id,
-      checked: patch.checked ?? current.checked,
-      indent: patch.indent ?? current.indent,
-      number: patch.number ?? current.number,
-      language: patch.language ?? current.language,
-      fence: patch.fence ?? current.fence,
-    },
-  );
-
-  const updateBlock = (id, patch = {}) => commit(() => {
-    const index = findIndex(id);
-    if (index < 0) return null;
-    blocks[index] = normalizedBlock(blocks[index], patch);
-    return publicBlock(blocks[index]);
-  });
-
-  const changeType = (id, type) => commit(() => {
-    const index = findIndex(id);
-    if (index < 0) return null;
-    const current = blocks[index];
-    const text = current.text.replace(/^\/[^\s]*\s?/, '');
-    blocks[index] = normalizedBlock(current, {
-      type,
-      text: type === 'divider' ? '' : text,
-      checked: type === 'todo' ? current.checked : false,
-    });
-    return publicBlock(blocks[index]);
-  });
-
-  const addAfter = (afterId, { type = 'paragraph', text = '', ...options } = {}) => commit(() => {
-    const index = Math.max(0, findIndex(afterId));
-    const next = createEditorBlock(type, text, options);
-    blocks.splice(index + 1, 0, next);
-    return publicBlock(next);
-  });
-
-  const remove = (id) => commit(() => {
-    const index = findIndex(id);
-    if (index < 0) return null;
-    if (blocks.length === 1) {
-      const replacement = createEditorBlock();
-      blocks = [replacement];
-      return { changed: true, focusId: replacement.id, enteringId: replacement.id, index: 0 };
-    }
-    blocks.splice(index, 1);
-    return {
-      changed: true,
-      focusId: blocks[Math.max(0, index - 1)].id,
-      enteringId: null,
-      index,
-    };
-  });
-
-  const moveTo = (id, destination) => commit(() => {
-    const sourceIndex = findIndex(id);
-    const target = Math.min(Math.max(Math.floor(Number(destination)), 0), blocks.length - 1);
-    if (sourceIndex < 0 || sourceIndex === target) return false;
-    const [moving] = blocks.splice(sourceIndex, 1);
-    blocks.splice(target, 0, moving);
-    return { changed: true, id, sourceIndex, destination: target };
-  });
-  const moveRelative = (id, targetId, position = 'before') => commit(() => {
-    const isSpacer = (blockValue) => blockValue?.type === 'paragraph' && blockValue.text === '';
-    const visibleSlots = blocks
-      .map((blockValue, index) => (isSpacer(blockValue) ? -1 : index))
-      .filter((index) => index >= 0);
-    const visibleBlocks = visibleSlots.map((index) => blocks[index]);
-    const sourceIndex = visibleBlocks.findIndex((blockValue) => blockValue.id === id);
-    const targetIndex = visibleBlocks.findIndex((blockValue) => blockValue.id === targetId);
-    if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return false;
-
-    let destination = targetIndex + (position === 'after' ? 1 : 0);
-    if (sourceIndex < destination) destination -= 1;
-    if (destination === sourceIndex) return false;
-
-    const [moving] = visibleBlocks.splice(sourceIndex, 1);
-    visibleBlocks.splice(destination, 0, moving);
-    visibleSlots.forEach((slot, index) => {
-      blocks[slot] = visibleBlocks[index];
-    });
-    return {
-      changed: true,
-      id,
-      sourceIndex,
-      destination,
-    };
-  });
-  const move = (id, delta) => {
-    const index = findIndex(id);
-    const destination = index + Math.trunc(Number(delta) || 0);
-    if (index < 0 || destination < 0 || destination >= blocks.length) return false;
-    return moveTo(id, destination);
-  };
-
-  const duplicate = (id) => commit(() => {
-    const index = findIndex(id);
-    if (index < 0) return null;
-    const current = blocks[index];
-    const copy = createEditorBlock(current.type, current.text, {
-      checked: current.checked,
-      indent: current.indent,
-      number: current.number,
-      language: current.language,
-      fence: current.fence,
-    });
-    blocks.splice(index + 1, 0, copy);
-    return publicBlock(copy);
-  });
-
-  const split = (id, { before = '', after = '' } = {}) => commit(() => {
-    const index = findIndex(id);
-    if (index < 0 || blocks[index].type === 'code') return false;
-    const current = blocks[index];
-    blocks[index] = normalizedBlock(current, { text: before });
-    const nextType = current.type.startsWith('heading') || current.type === 'quote'
-      ? 'paragraph'
-      : current.type;
-    const next = createEditorBlock(nextType, after, {
-      indent: current.indent,
-      number: current.type === 'numbered' ? current.number + 1 : 1,
-    });
-    blocks.splice(index + 1, 0, next);
-    return publicBlock(next);
-  });
-
-  const mergeWithPrevious = (id) => commit(() => {
-    const index = findIndex(id);
-    if (index <= 0) return false;
-    const current = blocks[index];
-    const previous = blocks[index - 1];
-    if (current.type === 'divider' || previous.type === 'divider' || previous.type === 'code') return false;
-    const offset = previous.text.length;
-    blocks[index - 1] = normalizedBlock(previous, { text: `${previous.text}${current.text}` });
-    blocks.splice(index, 1);
-    return { changed: true, focusId: previous.id, offset };
-  });
-
-  const indent = (id, delta) => {
-    const current = blocks[findIndex(id)];
-    if (!current || !['bullet', 'numbered', 'todo'].includes(current.type)) return false;
-    return updateBlock(id, {
-      indent: Math.min(Math.max(current.indent + Math.trunc(Number(delta) || 0), 0), 6),
-    });
-  };
-
   const restoreHistory = (nextIndex, action, activeId = null) => {
     if (disposed) return { changed: false, action };
     const index = Math.min(Math.max(nextIndex, 0), history.length - 1);
@@ -682,9 +516,4 @@ export function createEditorDocumentModel({
     setCursor,
     dispose,
   });
-}
-
-export function editorBlockLabel(type) {
-  return EDITOR_COMMANDS.find((command) => command.id === type)?.label
-    || (type.startsWith('heading') ? `Heading ${type.slice(-1)}` : 'Text');
 }

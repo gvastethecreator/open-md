@@ -3,10 +3,7 @@
  * classification, and relative image source rules.
  */
 
-import {
-  isSupportedFilePath,
-  resolveDocumentFormat,
-} from './format-detect.js';
+import { isSupportedFilePath } from './format-detect.js';
 
 export function getDisplayName(filePath) {
   if (typeof filePath !== 'string' || filePath.trim() === '') {
@@ -15,10 +12,6 @@ export function getDisplayName(filePath) {
 
   const normalizedPath = filePath.replace(/\\/g, '/');
   return normalizedPath.split('/').pop() || filePath;
-}
-
-export function isImageFilePath(filePath) {
-  return resolveDocumentFormat(filePath).family === 'image';
 }
 
 function normalizeFilePath(filePath) {

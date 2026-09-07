@@ -16,6 +16,7 @@ import {
   parseMarkdownLine,
 } from './editor-document.js';
 import { MOTION_EASE_OUT } from './reader-motion.js';
+import { createEditorCaretMotion } from './editor-caret-motion.js';
 
 function normalizeSource(value) {
   const text = String(value ?? '').replace(/\r\n?/g, '\n');
@@ -191,6 +192,12 @@ export function createEditorClassicSurface({
   const highlightSource = () => Boolean(adapters.highlightSource?.());
   const readSource = () => normalizeSource(adapters.getSource?.() || '');
   const reduceMotion = () => Boolean(adapters.shouldReduceMotion?.());
+  const caretMotion = createEditorCaretMotion({
+    window,
+    canvas,
+    isEnabled: () => adapters.isCaretMotionEnabled?.() !== false,
+    shouldReduceMotion: reduceMotion,
+  });
 
   const cancelBandAnimation = () => {
     if (bandAnimation) {
@@ -1107,9 +1114,11 @@ export function createEditorClassicSurface({
     }
     bindListeners();
     render({ source: readSource(), focusLine: 0, caret: 0 });
+    caretMotion.mount();
   };
 
   const unmount = () => {
+    caretMotion.unmount();
     mounted = false;
     selectionLines = new Set();
     unbindListeners();
@@ -1126,6 +1135,7 @@ export function createEditorClassicSurface({
   };
 
   const dispose = () => {
+    caretMotion.unmount();
     disposed = true;
     mounted = false;
     selectionLines = new Set();
@@ -1147,6 +1157,7 @@ export function createEditorClassicSurface({
     handleKeydown,
     handleSelectionChange,
     syncActiveLineBand: scheduleActiveLineBand,
+    refreshCaretMotion: caretMotion.refresh,
     /** @internal test/debug: preferred sticky column for vertical nav */
     preferredColumn: () => preferredColumn,
     isMounted: () => mounted,
