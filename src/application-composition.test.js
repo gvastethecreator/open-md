@@ -15,7 +15,7 @@ describe('application composition seam', () => {
 
   // Full-suite boot imports main + mounts the real shell; under parallel
   // jsdom workers this can exceed the default 5s without hanging.
-  it('exports startOpenMdApplication and boots without Tauri imports in main', async () => {
+  it.each([null, 'initial.md'])('boots without native imports and synchronizes the initial document: %s', async (initialPath) => {
     const mainSource = readFileSync(join(root, 'src/main.js'), 'utf8');
     const ingressSource = readFileSync(join(root, 'src/document-ingress-controller.js'), 'utf8');
     expect(mainSource).not.toMatch(/from '@tauri-apps\//);
@@ -27,11 +27,14 @@ describe('application composition seam', () => {
     expect(mainSource).toMatch(/createDocumentLinkController/);
 
     const dom = new JSDOM(html, {
-      url: 'https://open.md.local/',
+      url: `https://open.md.local/${initialPath ? '?file=initial.md' : ''}`,
       pretendToBeVisual: true,
       runScripts: 'outside-only',
     });
     dom.window.__VITEST__ = true;
+    dom.window.__OPENMD_PREVIEW_DOCUMENTS__ = {
+      'initial.md': { source: '# Initial document', html: '<h1>Initial document</h1>' },
+    };
     dom.window.matchMedia = () => ({
       matches: false,
       addEventListener() {},
@@ -55,8 +58,14 @@ describe('application composition seam', () => {
 
     const { startOpenMdApplication } = await import('./main.js');
     const app = await startOpenMdApplication();
-    expect(app.currentPath()).toBeNull();
+    expect(app.currentPath()).toBe(initialPath);
     expect(app.zoom()).toBe(1);
+    if (initialPath) {
+      dom.window.document.getElementById('edit-mode-button').click();
+      await vi.waitFor(() => {
+        expect(dom.window.document.getElementById('editor-canvas').textContent).toContain('Initial document');
+      });
+    }
     await app.dispose();
   }, 20_000);
 });

@@ -648,6 +648,7 @@ function mountApplicationEditor(own) {
       onDiagnostic: (message, error) => console.error(`${message}:`, error),
     },
   }));
+  documentViewState?.syncEditorDocument();
   });
 }
 

@@ -41,6 +41,28 @@ function fixture() {
 }
 
 describe('Document View State', () => {
+  it('synchronizes a late editor with the current document without replaying open hooks', () => {
+    let editor = null;
+    const onStateChange = vi.fn();
+    const controller = createDocumentViewStateController({
+      window: {}, adapters: { getEditorSession: () => editor }, hooks: { onStateChange },
+    });
+    controller.handle({ state: 'ready', path: 'first.md', document: payload('First') });
+    controller.handle({ state: 'loading', path: 'second.md' });
+    controller.handle({ state: 'ready', path: 'second.md', document: payload('Second') });
+    editor = { setDocument: vi.fn(), clearDocument: vi.fn(), current: () => ({ path: 'second.md' }) };
+    onStateChange.mockClear();
+    controller.syncEditorDocument();
+    expect(editor.setDocument).toHaveBeenCalledExactlyOnceWith({
+      path: 'second.md', source: '# Second', markdown: true, presentation: 'default',
+    });
+    expect(onStateChange).not.toHaveBeenCalled();
+    controller.handle({ state: 'loading', path: 'third.md' });
+    editor.clearDocument.mockClear();
+    controller.syncEditorDocument();
+    expect(editor.clearDocument).toHaveBeenCalledOnce();
+    expect(editor.setDocument).toHaveBeenCalledOnce();
+  });
   it('fans loading and ready through one coherent identity transition', () => {
     const view = fixture();
     view.controller.handle({ state: 'loading', path: 'second.md', document: null });

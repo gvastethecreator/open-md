@@ -59,6 +59,15 @@ export function createDocumentViewStateController({
     });
   };
 
+  const syncEditorDocument = () => {
+    if (disposed) return;
+    if (state.state === 'ready' && state.document) {
+      setEditorDocument(state.path, state.document);
+    } else {
+      adapters.getEditorSession?.()?.clearDocument();
+    }
+  };
+
   const handle = (snapshot = {}) => {
     if (disposed) return state;
     if (snapshot.state === 'loading') {
@@ -174,6 +183,7 @@ export function createDocumentViewStateController({
   return Object.freeze({
     current,
     handle,
+    syncEditorDocument,
     commitDocument,
     updateDocument,
     applySavedDocument,
