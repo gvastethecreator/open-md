@@ -16,13 +16,19 @@ describe('format readers', () => {
     expect(result.warning).toBeNull();
   });
 
-  it('caps large JSON trees like CSV row caps', () => {
-    const keys = Object.fromEntries(Array.from({ length: 50 }, (_, index) => [`k${index}`, index]));
-    const result = renderJsonRead(JSON.stringify(keys), { nodeCap: 8 });
+  it.each(['object', 'array', 'nested'])('caps the entire generated JSON %s tree', (shape) => {
+    const values = Array.from({ length: 50 }, (_, index) => index);
+    const input = shape === 'object' ? Object.fromEntries(values.map((n) => [`k${n}`, n]))
+      : shape === 'nested' ? { items: values, later: values } : values;
+    const result = renderJsonRead(JSON.stringify(input), { nodeCap: 8 });
     expect(result.mode).toBe('rich');
     expect(result.truncated).toBe(true);
     expect(result.warning).toMatch(/first 8/i);
     expect(result.html).toContain('json-truncated');
+    expect(result.html.match(/class="json-item"/g)).toHaveLength(7);
+    expect(result.html.match(/class="json-truncated"/g)).toHaveLength(1);
+    expect(result.html).toContain('<span class="json-number">0</span>');
+    expect(result.html).not.toContain('<span class="json-number">49</span>');
   });
 
   it('degrades invalid JSON to plain with warning (F6)', () => {

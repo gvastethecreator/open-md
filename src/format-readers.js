@@ -32,10 +32,6 @@ function wrapRich(inner, { format, warning = null } = {}) {
 
 function renderJsonNode(value, depth, state) {
   state.count += 1;
-  if (state.count > state.nodeCap) {
-    state.truncated = true;
-    return '<span class="json-truncated">…</span>';
-  }
   if (value === null) return '<span class="json-null">null</span>';
   if (typeof value === 'boolean') return `<span class="json-bool">${value}</span>`;
   if (typeof value === 'number') return `<span class="json-number">${escapeHtml(String(value))}</span>`;
@@ -43,19 +39,31 @@ function renderJsonNode(value, depth, state) {
 
   if (Array.isArray(value)) {
     if (value.length === 0) return '<span class="json-array">[]</span>';
-    const items = value.map((item, index) => (
-      `<li class="json-item"><span class="json-index">${index}</span>${renderJsonNode(item, depth + 1, state)}</li>`
-    )).join('');
-    return `<details class="json-collapsible" ${depth < 2 ? 'open' : ''}><summary>Array (${value.length})</summary><ul class="json-array">${items}</ul></details>`;
+    const items = [];
+    for (let index = 0; index < value.length; index += 1) {
+      if (state.count >= state.nodeCap) {
+        if (!state.truncated) items.push('<li class="json-truncated">…</li>');
+        state.truncated = true;
+        break;
+      }
+      items.push(`<li class="json-item"><span class="json-index">${index}</span>${renderJsonNode(value[index], depth + 1, state)}</li>`);
+    }
+    return `<details class="json-collapsible" ${depth < 2 ? 'open' : ''}><summary>Array (${value.length})</summary><ul class="json-array">${items.join('')}</ul></details>`;
   }
 
   if (typeof value === 'object') {
     const keys = Object.keys(value);
     if (keys.length === 0) return '<span class="json-object">{}</span>';
-    const items = keys.map((key) => (
-      `<li class="json-item"><span class="json-key">${escapeHtml(key)}</span>${renderJsonNode(value[key], depth + 1, state)}</li>`
-    )).join('');
-    return `<details class="json-collapsible" ${depth < 2 ? 'open' : ''}><summary>Object (${keys.length})</summary><ul class="json-object">${items}</ul></details>`;
+    const items = [];
+    for (const key of keys) {
+      if (state.count >= state.nodeCap) {
+        if (!state.truncated) items.push('<li class="json-truncated">…</li>');
+        state.truncated = true;
+        break;
+      }
+      items.push(`<li class="json-item"><span class="json-key">${escapeHtml(key)}</span>${renderJsonNode(value[key], depth + 1, state)}</li>`);
+    }
+    return `<details class="json-collapsible" ${depth < 2 ? 'open' : ''}><summary>Object (${keys.length})</summary><ul class="json-object">${items.join('')}</ul></details>`;
   }
 
   return `<span class="json-unknown">${escapeHtml(String(value))}</span>`;

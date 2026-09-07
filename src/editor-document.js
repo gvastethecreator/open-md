@@ -375,12 +375,13 @@ export function createEditorDocumentModel({
   const publicBlock = (block) => Object.freeze({ ...block });
   let projection = null;
   let currentSnapshot = null;
-  const refreshSnapshot = ({ structure = false } = {}) => {
+  const refreshSnapshot = ({ structure = false, currentSource } = {}) => {
     if (structure || !projection) {
+      const serialized = currentSource ?? serializeCurrent();
       projection = Object.freeze({
-        source: serializeCurrent(),
+        source: serialized,
         blocks: Object.freeze(blocks.map(publicBlock)),
-        stats: Object.freeze(getEditorDocumentStats(serializeCurrent())),
+        stats: Object.freeze(getEditorDocumentStats(serialized)),
       });
     }
     currentSnapshot = Object.freeze({
@@ -393,7 +394,7 @@ export function createEditorDocumentModel({
     });
     return currentSnapshot;
   };
-  refreshSnapshot({ structure: true });
+  refreshSnapshot({ structure: true, currentSource: history[0] });
   const source = () => projection.source;
   const snapshot = () => currentSnapshot;
   const publish = (options) => {
@@ -401,8 +402,7 @@ export function createEditorDocumentModel({
     subscribers.forEach((subscriber) => subscriber(next));
     return next;
   };
-  const recordHistory = (cursor = null) => {
-    const current = serializeCurrent();
+  const recordHistory = (current, cursor = null) => {
     if (history[historyIndex] === current) return false;
     history = history.slice(0, historyIndex + 1);
     historyCursors = historyCursors.slice(0, historyIndex + 1);
@@ -420,19 +420,20 @@ export function createEditorDocumentModel({
     const result = mutate();
     if (result === false || result === null) return result;
     if (blocks.length === 0) blocks = [createEditorBlock()];
+    const currentSource = serializeCurrent();
     const cursor = options.cursor || null;
     if (options.coalesce && coalesceOpen && historyIndex === history.length - 1) {
-      history[historyIndex] = serializeCurrent();
+      history[historyIndex] = currentSource;
       historyCursors[historyIndex] = cursor;
     } else {
       if (options.coalesce && options.originCursor) {
         historyCursors[historyIndex] = options.originCursor;
       }
-      recordHistory(cursor);
+      recordHistory(currentSource, cursor);
       coalesceOpen = Boolean(options.coalesce);
     }
     revision += 1;
-    publish({ structure: true });
+    publish({ structure: true, currentSource });
     return result;
   };
   const findIndex = (id) => blocks.findIndex((block) => block.id === id);
@@ -478,13 +479,13 @@ export function createEditorDocumentModel({
     historyIndex = 0;
     coalesceOpen = false;
     revision += 1;
-    return publish({ structure: true });
+    return publish({ structure: true, currentSource: history[0] });
   };
 
   /** Replace document from full source text and record history (Classic surface). */
   const applySource = (nextSource = '', options = {}) => commit(() => {
     const normalized = String(nextSource ?? '').replace(/\r\n?/g, '\n');
-    if (serializeCurrent() === normalized) return false;
+    if (projection.source === normalized) return false;
     blocks = parseEditorDocument(normalized, { markdown });
     return true;
   }, {
