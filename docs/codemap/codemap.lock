@@ -1,12 +1,12 @@
 {
   "schema_version": 2,
-  "source_commit": "4efc21dbab7a181d014b9d06c6a23320adae299e",
+  "source_commit": "974d6b7499b8adfeaa66d230e4b6bf83eef8dfdd",
   "working_tree_dirty": true,
-  "generated_at": "2026-09-07T03:03:03Z",
-  "generation_id": "a1b492085f23a681bc71a8cffdb771a12e96f70ba6a840ee7fcff9d6f8bce686",
+  "generated_at": "2026-09-09T07:38:07Z",
+  "generation_id": "e0801ca4f86ba699bc717bdd36ae8ce797208719fa9db5449abd823e8e6aee9e",
   "analysis": {
     "version": "syntax-1",
-    "digest": "3c79d1c345c40f78e72d86e76fcdb0c240c137eb03778015ce78f994b43e3ccf"
+    "digest": "f0425aaa701d9cbf50227a799d98d8e4b00b9fabff9ce823c4d70414555dc774"
   },
   "inventory": {
     "policy": {
@@ -67,8 +67,8 @@
         "path": "package.json",
         "origin": "tracked",
         "state": "present",
-        "digest": "fb2e013a4b61979cdf754f94fbf194ad8e15828b7f39e5c0155d744887ddc576",
-        "size": 2145
+        "digest": "551e190adba3c4cbec8050925f084ac359cd64f206db22b694f088c3cb62bdd2",
+        "size": 2198
       },
       {
         "path": "scripts/check-bundle.mjs",
@@ -487,8 +487,8 @@
         "path": "src/format-detect.test.js",
         "origin": "tracked",
         "state": "present",
-        "digest": "09c97841d91169a2f4a341d5a9c3586ea1150e480ad8f6e4b139696904afcfb7",
-        "size": 4682
+        "digest": "fb084554027b310b33f89c219c4b006224e84eaf80eb3b9c0351022c146a30c2",
+        "size": 4260
       },
       {
         "path": "src/format-readers.js",
@@ -522,8 +522,8 @@
         "path": "src/free-port.test.js",
         "origin": "tracked",
         "state": "present",
-        "digest": "0b32f9bfea057a126506344b25281042162962f68b470a05e812126ad1ea8465",
-        "size": 1687
+        "digest": "54675701146233cee9e01f1c9add9acf05867b1db196cc2228be023ace538f0c",
+        "size": 1059
       },
       {
         "path": "src/image-document-viewer.js",
@@ -893,16 +893,16 @@
         "path": "vite.config.js",
         "origin": "tracked",
         "state": "present",
-        "digest": "90f3e21eb4e3ccecfa5e17e8683166d2104d510de8f31b86442c542c00561d3e",
-        "size": 471
+        "digest": "5a540c9903b9ef87f2afed0c4fdd3631b5e5a40c935c1f2618607d51331278fd",
+        "size": 297
       }
     ],
-    "digest": "ec9e58718df06f80f91a9554463bc267855aa2833573fd46c428515f70314baf"
+    "digest": "0c8210aa39ae9f11a01e1bc1458f8c95903199405ff9e938179bef60d99a5cf0"
   },
-  "source_digest": "3cd4978725285ce79e04582ccbdafe43bdd3c45f368bac717bc6f483050dbe90",
+  "source_digest": "42db14cfb1639fe1f3df8c3f52c68e0b33626e42548464cac5c3ee7a7a92f38c",
   "artifact_hashes": {
-    "codemap.json": "392999ee1f5ece5750f50b152b6b313ea3be1c9803e1e55abdedcdc9c3188107",
-    "codemap.md": "bbafb37a4677df18587c71731aeb777f687eacdafb0dbc0011d55ac5ab44f19e",
-    "codemap.html": "c6c3df4cac061360502ab7993d400efeaadc08be7e7b470935799d26e635cf07"
+    "codemap.json": "17b6d19d431e3da7812817dbc6f5e21b94ff253e2040b31c93fcb6a162b9a402",
+    "codemap.md": "6bf01aabb0a8ff0eef02f63d3717c414b097d7b0fe4fcc014bb764feb238ac81",
+    "codemap.html": "8238493098cabf7e044a2a02c86a8691c34325e2f7a9ab75824fde01ce7bb8fe"
   }
 }

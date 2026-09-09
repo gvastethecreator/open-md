@@ -1,8 +1,6 @@
-# Format chrome dogfood fixtures
+# Format test fixtures
 
-Local samples for exercising format-aware chrome without OS associations.
-The Lumen Harbor files in the parent folder are the complete showcase.
-These fixtures stay here because native tests open `sample-scene.nfo` by path.
+Use these samples to check format-specific controls and status without OS associations. For complete example documents, see the [Lumen Harbor pack](../README.md). Native tests open `sample-scene.nfo` by path.
 
 | File | Expect |
 | --- | --- |

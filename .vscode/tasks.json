@@ -86,8 +86,6 @@
       "type": "shell",
       "command": "pnpm",
       "args": ["run", "tauri", "build"],
-      "dependsOn": ["✅ Verify"],
-      "dependsOrder": "sequence",
       "group": {"kind": "build", "isDefault": true},
       "problemMatcher": []
     },

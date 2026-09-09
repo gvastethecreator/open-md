@@ -1,9 +1,9 @@
 # Code map: open.md
 
-Generated: 2026-09-07T03:03:03Z | Commit: `4efc21dbab7a` | Schema: 2
-Generation: `a1b492085f23a681bc71a8cffdb771a12e96f70ba6a840ee7fcff9d6f8bce686`
+Generated: 2026-09-09T07:38:07Z | Commit: `974d6b7499b8` | Schema: 2
+Generation: `e0801ca4f86ba699bc717bdd36ae8ce797208719fa9db5449abd823e8e6aee9e`
 Scope: . | Inventory: working-tree
-Nodes: 144 | Edges: 457 | Flows: 1
+Nodes: 144 | Edges: 455 | Flows: 1
 
 ## Coverage
 
@@ -88,7 +88,7 @@ Nodes: 144 | Edges: 457 | Flows: 1
 - `src-tauri/src/lib.rs` -> `src-tauri/src/images.rs` | imports
 - `src-tauri/src/lib.rs` -> `src-tauri/src/open_requests.rs` | imports
 - `src-tauri/src/open_requests.rs` -> `external:rust:serde` | imports
-- Showing 50 of 457 edges; JSON contains every edge and its evidence.
+- Showing 50 of 455 edges; JSON contains every edge and its evidence.
 
 ## Unknown
 
@@ -111,7 +111,7 @@ Nodes: 144 | Edges: 457 | Flows: 1
 
 ## Architecture changes
 
-- Nodes: +144 / -0; edges: +457 / -0.
+- Nodes: +0 / -0; edges: +0 / -2.
 - Boundary changes: 0; new cycles: 0.
 
 ## Read next

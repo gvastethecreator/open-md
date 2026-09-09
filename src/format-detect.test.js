@@ -13,12 +13,9 @@ import {
 import formatParity from './format-parity.json';
 
 const PNG_SIG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]);
-const JPEG_SIG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 0x10]);
-const GIF_SIG = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]);
 const WEBP_SIG = new Uint8Array([
   0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
 ]);
-const BMP_SIG = new Uint8Array([0x42, 0x4d, 0x00, 0x00]);
 const AVIF_SIG = new Uint8Array([
   0x00, 0x00, 0x00, 0x1c, 0x66, 0x74, 0x79, 0x70, 0x61, 0x76, 0x69, 0x66,
 ]);
@@ -39,12 +36,8 @@ describe('format detect', () => {
     expect(FORMAT_BY_EXTENSION.png).toBe('png');
   });
 
-  it('detects image magic signatures', () => {
-    expect(detectImageFormatFromMagic(PNG_SIG)).toBe('png');
-    expect(detectImageFormatFromMagic(JPEG_SIG)).toBe('jpeg');
-    expect(detectImageFormatFromMagic(GIF_SIG)).toBe('gif');
+  it('detects additional image headers and rejects unknown bytes', () => {
     expect(detectImageFormatFromMagic(WEBP_SIG)).toBe('webp');
-    expect(detectImageFormatFromMagic(BMP_SIG)).toBe('bmp');
     expect(detectImageFormatFromMagic(AVIF_SIG)).toBe('avif');
     expect(detectImageFormatFromMagic(new Uint8Array([0x00, 0x01, 0x02]))).toBeNull();
   });

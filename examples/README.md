@@ -1,13 +1,8 @@
 # Lumen Harbor example pack
 
-Local documents for exercising every format `open.md` will actually open.
-They share one fictional night station so the files are complete instead of
-`foo/bar` stubs.
+Use these local documents to try the formats supported by `open.md`. They share a fictional night station, Lumen Harbor.
 
-The reading test that the native suite already knows is still
-[a-quiet-place.md](a-quiet-place.md). It keeps the quiet desk picture, the
-strikethrough `completed ideas`, the original Mermaid flowchart, and then
-keeps going.
+Start with [a-quiet-place.md](a-quiet-place.md) for Markdown reading and editing. Native tests also use this file; preserve its quiet desk image, `completed ideas` strikethrough, and Mermaid flowchart.
 
 ## Open these
 
@@ -33,7 +28,7 @@ keeps going.
 
 ## Images
 
-View-only. One file per raster the reader accepts.
+Images are view-only. The samples cover each supported raster format.
 
 | File | Format |
 | --- | --- |

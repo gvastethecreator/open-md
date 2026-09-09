@@ -82,3 +82,12 @@ ehthumbs.db
 .snapshots/
 .playwright-mcp/
 .code-review-graph
+
+# Vitest 5 artifacts
+.vitest/
+
+# Code-map staging, review, and publication state
+/docs/codemap/.staging/
+/docs/codemap/.review/
+/docs/codemap/.publication/
+/docs/codemap/.publisher.lock

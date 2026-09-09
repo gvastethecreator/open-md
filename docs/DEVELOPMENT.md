@@ -20,6 +20,8 @@ pnpm install
 pnpm run tauri dev
 ```
 
+Vite uses `127.0.0.1:33223`. If the port is occupied, reuse the existing server or stop its process before starting another. Startup does not terminate the process that owns the port.
+
 | Command | Purpose |
 | --- | --- |
 | `pnpm run dev` | Start Vite without a native window. |
@@ -41,7 +43,13 @@ pnpm run check:rust
 pnpm run test:rust
 ```
 
-`check:frontend` validates static assets, config, themes, and Pages. `test:frontend` runs all frontend tests, including reader-shell scenarios over real `index.html` with fake adapters. Use `check:shell` to run only those scenarios. `pnpm run verify` runs each check once, builds the frontend and checks its bundle budget, then checks Rust formatting, types, and unit tests. CI runs the same gates on Linux, Windows, and macOS, then runs pnpm and Cargo dependency audits.
+`check:frontend` validates static assets, config, themes, and Pages. `test:frontend` runs all frontend tests, including reader-shell scenarios over real `index.html` with fake adapters. Use `check:shell` to run only those scenarios.
+
+For the full gate, run `pnpm run verify` instead of repeating the commands above. CI runs the same gates on Linux, Windows, and macOS, with separate pnpm and Cargo dependency audit jobs.
+
+VS Code tasks mirror these commands. **Build** runs `pnpm run tauri build`, whose Tauri hook builds and checks the frontend bundle. **Verify** runs the full gate separately; Build does not run it automatically.
+
+Use the [code map](codemap/codemap.md) to find module relationships and related tests. The [interactive map](codemap/codemap.html) includes source evidence and analysis limits.
 
 Reproduce the Rust audit locally with the pinned tool version used in CI:
 
@@ -56,7 +64,7 @@ Packaged builds register `.md`, `.markdown`, and `.txt` as viewer associations. 
 
 ## Themes and third-party material
 
-The theme catalogue is a line-ending-normalized copy of the Gogh dataset at a fixed upstream commit. Read [Bundled themes](THEMES.md) and [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) before you change theme data. After changing `src/themes.json`, run `pnpm run generate:themes`. Frontend validation rejects a stale or incomplete runtime projection.
+The theme catalog is a line-ending-normalized copy of the Gogh dataset at a fixed upstream commit. Read [Bundled themes](THEMES.md) and [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) before you change theme data. After changing `src/themes.json`, run `pnpm run generate:themes`. Frontend validation rejects a stale or incomplete runtime projection.
 
 Theme changes prepare Mermaid output before the visual commit so diagrams do not reflow mid-transition. The root wipe keeps the outgoing snapshot above the incoming snapshot while its clip path closes. Toast copy crossfades in one shared grid cell and must not use vertical transforms.
 

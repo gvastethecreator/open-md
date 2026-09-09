@@ -24,6 +24,6 @@ An entry's `author` field is attribution metadata from the upstream dataset. It 
 
 If you believe a palette is misattributed or should not be bundled, open an issue with the theme name and the upstream source. Do not replace upstream provenance with a guessed author or license.
 
-## Editing the catalogue
+## Editing the catalog
 
 You can update `src/themes.json` during development. The frontend validator requires every entry to include unique `name`, `background`, and `foreground` strings. When changing upstream-derived data, record the new source commit and update the third-party notice in the same change.

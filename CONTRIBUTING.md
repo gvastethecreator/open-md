@@ -24,11 +24,11 @@ Start the app with `pnpm run tauri dev`. Commands and layout are in the
 ## Before opening a pull request
 
 - Keep the change focused and explain user-visible behavior.
-- Add or update tests when behavior changes.
+- Extend an existing test when a behavior change leaves a meaningful failure unprotected.
 - Run the matching checks from `docs/DEVELOPMENT.md`. CI runs the full matrix.
 - Run `pnpm run verify` before a broad runtime or dependency change.
-- Update `README.md` and the `Unreleased` section of `CHANGELOG.md` for user-visible changes.
-- For new themes, icons, fonts, or code snippets, record exact provenance and license. Theme data must follow [the bundled-theme policy](docs/THEMES.md) and [the third-party notices](THIRD_PARTY_NOTICES.md). After catalogue changes, run `pnpm run generate:themes`.
+- Update affected documentation and the `Unreleased` section of `CHANGELOG.md` for user-visible changes.
+- For new themes, icons, fonts, or code snippets, record exact provenance and license. Theme data must follow [the bundled-theme policy](docs/THEMES.md) and [the third-party notices](THIRD_PARTY_NOTICES.md). After catalog changes, run `pnpm run generate:themes`.
 - Do not include secrets, private audit output, generated bundles, or files from `.local/` in a commit.
 
 ## Pull requests
